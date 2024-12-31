@@ -26,7 +26,7 @@ pipeline {
                     def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
                     echo "Current branch is ${branchName}"
                     
-                    if (branchName != 'main') {
+                    if (branchName != 'HEAD') {
                         echo "Stopping execution: not on main branch"
                         currentBuild.result = 'ABORTED'
                         error("Stopping execution: not on main branch")
