@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     environment {
-        EC2_HOST = 'your-ec2-ip'
-        EC2_USER = 'ubuntu'
+        EC2_HOST = '13.201.73.252'
+        EC2_USER = 'admin'
         SSH_CREDENTIALS = 'ec2-ssh-key'
     }
     
