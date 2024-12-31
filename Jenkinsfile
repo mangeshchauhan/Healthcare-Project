@@ -9,7 +9,7 @@ pipeline {
     
     environment {
         // EC2 deployment details
-        EC2_HOST = '13.201.73.252'
+        EC2_HOST = ''
         EC2_USER = 'admin'
         DEPLOY_DIR = '/var/www/html'
         SSH_CREDENTIALS = 'ec2-ssh-key'
