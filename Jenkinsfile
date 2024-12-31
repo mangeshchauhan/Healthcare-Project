@@ -25,11 +25,13 @@ pipeline {
         stage('Check Branch') {
             steps {
                 script {
-                    if (env.BRANCH_NAME != 'main') {
-                        currentBuild.result = 'START'
-                        error('Start execution: on main branch')
-                    }
-                }
+                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    echo "Current branch is ${branchName}"
+                    
+                    if (branchName != 'main') {
+                        echo "Stopping execution: not on main branch"
+                        currentBuild.result = 'ABORTED'
+                        error("Stopping execution: not on main branch")
             }
         }
         
