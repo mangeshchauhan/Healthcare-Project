@@ -1,37 +1,20 @@
 pipeline {
     agent any
     
-    // Add triggers for main branch
-    triggers {
-        pollSCM('H/5 * * * *')  // Polls every 5 minutes
-        githubPush()            // Triggers on GitHub webhook
+    environment {
+        EC2_HOST = 'your-ec2-ip'
+        EC2_USER = 'ubuntu'
+        SSH_CREDENTIALS = 'ec2-ssh-key'
     }
     
-    environment {
-        // EC2 deployment details
-        EC2_HOST = '13.201.73.252'
-        EC2_USER = 'admin'
-        DEPLOY_DIR = '/var/www/html'
-        SSH_CREDENTIALS = 'ec2-ssh-key'
+    tools {
+        nodejs 'NodeJS 20.x'
     }
     
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stage('Check Branch') {
-            steps {
-                script {
-                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-                    echo "Current branch is ${branchName}"
-                    
-                    if (branchName != 'main') {
-                        echo "Stopping execution: not on main branch"
-                        currentBuild.result = 'ABORTED'
-                        error("Stopping execution: not on main branch")
             }
         }
         
@@ -49,25 +32,47 @@ pipeline {
         
         stage('Deploy to EC2') {
             steps {
-                // Using SSH credentials to securely connect to EC2
-                sshagent([SSH_CREDENTIALS]) {
-                    // Create deploy directory if it doesn't exist
-                    sh "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'"
+                script {
+                    // Create a tar of the build
+                    sh 'tar -czf dist.tar.gz dist/'
                     
-                    // Copy build files to EC2
-                    sh "scp -r build/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}"
+                    // Transfer files to EC2
+                    sshagent([SSH_CREDENTIALS]) {
+                        // Ensure target directory exists
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                                mkdir -p /var/www/html
+                            '
+                        """
+                        
+                        // Copy build files
+                        sh """
+                            scp -o StrictHostKeyChecking=no dist.tar.gz ${EC2_USER}@${EC2_HOST}:/tmp/
+                            ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                                cd /tmp && \
+                                sudo rm -rf /var/www/html/* && \
+                                sudo tar -xzf dist.tar.gz && \
+                                sudo cp -r dist/* /var/www/html/ && \
+                                sudo chown -R www-data:www-data /var/www/html && \
+                                sudo chmod -R 755 /var/www/html && \
+                                rm -rf dist.tar.gz dist
+                            '
+                        """
+                    }
                 }
             }
         }
     }
     
     post {
+        always {
+            cleanWs()
+        }
         success {
-            echo 'Successfully built and deployed to EC2!'
+            echo 'Successfully deployed to EC2!'
         }
         failure {
-            echo 'Build or deployment failed!'
-        }
+            echo 'Deployment failed!'
         }
     }
 }
