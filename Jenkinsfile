@@ -8,7 +8,7 @@ pipeline {
     }
     
     tools {
-        nodejs 'NodeJS 20.x'
+        nodejs 'NodeJS 20.x.x'
     }
     
     stages {
