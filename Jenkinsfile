@@ -10,7 +10,7 @@ pipeline {
         EC2_HOST = '13.233.160.155'
         EC2_USER = 'admin'
         DEPLOY_DIR = '/var/www/html'
-        SSH_KEY = credentials('07266d3d-66d0-4285-a860-9b72b716b95e') // Using credentials binding
+        SSH_KEY = credentials('ec2-ssh-key') // Using credentials binding
     }
     
     stages {
