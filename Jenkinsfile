@@ -26,8 +26,8 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH_NAME != 'main') {
-                        currentBuild.result = 'ABORTED'
-                        error('Stopping execution: not on main branch')
+                        currentBuild.result = 'START'
+                        error('Start execution: on main branch')
                     }
                 }
             }
