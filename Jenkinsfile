@@ -10,7 +10,7 @@ pipeline {
         EC2_HOST = '13.233.160.155'
         EC2_USER = 'admin'
         DEPLOY_DIR = '/var/www/html'
-        SSH_CREDENTIALS = 'ec2-ssh-key'
+        SSH_KEY = credentials('ec2-ssh-key') // Using credentials binding
     }
     
     stages {
@@ -38,8 +38,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
-                sh 'npm fund'
-                sh 'npm audit fix'
             }
         }
         
@@ -51,9 +49,17 @@ pipeline {
         
         stage('Deploy to EC2') {
             steps {
-                sshagent([SSH_CREDENTIALS]) {
-                    sh "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'"
-                    sh "scp -r build/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}"
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
+                    sh """
+                        # Ensure proper permissions for SSH key
+                        chmod 600 \${SSH_KEY_FILE}
+                        
+                        # Create deploy directory
+                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
+                        
+                        # Copy build files
+                        scp -i \${SSH_KEY_FILE} -r build/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}
+                    """
                 }
             }
         }
@@ -65,6 +71,9 @@ pipeline {
         }
         failure {
             echo 'Build or deployment failed!'
+        }
+        always {
+            cleanWs() // Clean workspace after build
         }
     }
 }
