@@ -38,6 +38,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                sh 'npm fund'
+                sh 'npm audit fix'
             }
         }
         
