@@ -7,8 +7,8 @@ pipeline {
     }
     
     environment {
-        EC2_HOST = '13.201.73.252'
-        EC2_USER = 'ec2-user'
+        EC2_HOST = '13.233.199.72'
+        EC2_USER = 'admin'
         DEPLOY_DIR = '/var/www/html'
         SSH_CREDENTIALS = 'ec2-ssh-key'
     }
