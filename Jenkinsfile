@@ -55,7 +55,7 @@ pipeline {
                         chmod 600 \${SSH_KEY_FILE}
                         
                         # Create deploy directory
-                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
+                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=yes ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
                         
                         # Copy build files
                         scp -i \${SSH_KEY_FILE} -r build/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}
