@@ -20,20 +20,20 @@ pipeline {
             }
         }
 
-        stage('Check Branch') {
-            steps {
-                script {
-                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-                    echo "Current branch is ${branchName}"
-                    
-                    if (branchName != 'HEAD') {
-                        echo "Stopping execution: not on main branch"
-                        currentBuild.result = 'ABORTED'
-                        error("Stopping execution: not on main branch")
-                    }
-                }
+   stage('Check Branch') {
+    steps {
+        script {
+            def branchName = env.GIT_BRANCH ?: sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+            echo "Current branch is ${branchName}"
+
+            if (!branchName.contains("main")) {
+                echo "Stopping execution: not on main branch"
+                currentBuild.result = 'ABORTED'
+                error("Stopping execution: not on main branch")
             }
         }
+    }
+}
         
         stage('Install Dependencies') {
             steps {
