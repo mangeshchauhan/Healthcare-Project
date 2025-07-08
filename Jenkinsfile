@@ -47,23 +47,22 @@ pipeline {
             }
         }
         
-        stage('Deploy to EC2') {
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
-                    sh """
-                        # Ensure proper permissions for SSH key
-                        chmod 600 \${SSH_KEY_FILE}
-                        
-                        # Create deploy directory
-                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
-                        
-                        # Copy build files
-                        scp -i \${SSH_KEY_FILE} -r build/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}
-                    """
-                }
-            }
+stage('Deploy to EC2') {
+    steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY_FILE')]) {
+            sh """
+                # Ensure proper permissions for SSH key
+                chmod 600 \${SSH_KEY_FILE}
+
+                # Create deploy directory
+                ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
+
+                # Copy build files
+                scp -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no -r dist/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}
+            """
         }
     }
+}
     
     post {
         success {
