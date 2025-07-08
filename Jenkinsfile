@@ -76,3 +76,4 @@ stage('Deploy to EC2') {
         }
     }
 }
+}
