@@ -10,7 +10,7 @@ pipeline {
         EC2_HOST = '10.0.0.133'
         EC2_USER = 'ubuntu'
         DEPLOY_DIR = '/var/www/html'
-        SSH_KEY = credentials('ec2-ssh-key') // Using credentials binding
+        SSH_KEY = credentials('ec2-ssh-key')
     }
 
     stages {
@@ -53,9 +53,14 @@ pipeline {
                     sh """
                         chmod 600 \${SSH_KEY_FILE}
 
-                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'mkdir -p ${DEPLOY_DIR}'
+                        # Create temp dir on remote
+                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no \${EC2_USER}@\${EC2_HOST} 'mkdir -p /home/ubuntu/deploy_temp'
 
-                        scp -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no -r dist/* ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}
+                        # Copy files
+                        scp -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no -r dist/* \${EC2_USER}@\${EC2_HOST}:/home/ubuntu/deploy_temp/
+
+                        # Move with sudo to web root
+                        ssh -i \${SSH_KEY_FILE} -o StrictHostKeyChecking=no \${EC2_USER}@\${EC2_HOST} 'sudo mv /home/ubuntu/deploy_temp/* \${DEPLOY_DIR}/'
                     """
                 }
             }
