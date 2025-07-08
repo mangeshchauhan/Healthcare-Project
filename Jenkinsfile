@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         EC2_HOST = '15.207.221.95'
-        EC2_USER = 'ubuntu'
+        EC2_USER = 'root'
         DEPLOY_DIR = '/var/www/html'
         SSH_KEY = credentials('ec2-ssh-key') // Using credentials binding
     }
