@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'healthcare-app',
-    script: './tailwind.config.js',
+    script: 'npm',
     args: 'start',
     instances: 1,
     autorestart: true,
